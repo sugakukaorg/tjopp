@@ -64,6 +64,7 @@ jobs:
     - name: Run Edu Mail Generator
       env:
         EDU_EMAIL: ${{ secrets.EDU_EMAIL }}
+        COLLEGE_ID: ${{ github.event.inputs.college_id }}
         DISPLAY: :99
       run: |
         Xvfb :99 -screen 0 1920x1080x24 &

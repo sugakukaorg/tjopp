@@ -177,6 +177,22 @@ class EduMailGenerator:
     
     def select_college(self) -> Tuple[str, int]:
         """Let user select a college"""
+        # Check for environment variable first (for CI/non-interactive mode)
+        college_id_env = os.environ.get('COLLEGE_ID')
+        if college_id_env:
+            try:
+                college_id = int(college_id_env)
+                if 1 <= college_id <= len(allColleges):
+                    selected_college = allColleges[college_id - 1]
+                    self.logger.info(f"Using college ID from environment: {college_id} - {selected_college}")
+                    print(f"\n{fc}{sd}[{fm}{sb}*{fc}{sd}] {fg}Selected (from env): {fy}{selected_college}")
+                    return selected_college, college_id - 1
+                else:
+                    self.logger.warning(f"Invalid COLLEGE_ID from environment: {college_id_env}. Must be 1-{len(allColleges)}")
+            except ValueError:
+                self.logger.warning(f"Invalid COLLEGE_ID format from environment: {college_id_env}")
+        
+        # Fall back to interactive mode
         print(f"{fc}{sd}[{fm}{sb}*{fc}{sd}] {fg}Select a college from available options:\n")
         
         # Display colleges with colors

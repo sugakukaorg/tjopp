@@ -62,7 +62,11 @@ class Config:
             # Try to get from GitHub Actions secrets
             email = os.getenv('GITHUB_EMAIL')
         if not email:
-            # Fallback to asking user
+            # Check if running in CI environment
+            is_ci = os.getenv('CI') or os.getenv('GITHUB_ACTIONS')
+            if is_ci:
+                raise ValueError("EDU_EMAIL environment variable is required in CI/non-interactive mode")
+            # Fallback to asking user (only in interactive mode)
             email = input("Enter your email address: ")
         return email
     
@@ -70,29 +74,38 @@ class Config:
         """Get browser preference from config or ask user"""
         browser = self.get('browser')
         if not browser or browser == '':
-            print("\nAvailable browsers:")
-            print("1. chrome - Regular Chrome")
-            print("2. firefox - Firefox")
-            print("3. chrome_undetected - Undetected Chrome (Recommended)")
-            
-            while True:
-                choice = input("Select browser (1-3): ").strip()
-                if choice == '1':
-                    browser = 'chrome'
-                    break
-                elif choice == '2':
-                    browser = 'firefox'
-                    break
-                elif choice == '3':
-                    browser = 'chrome_undetected'
-                    break
-                else:
-                    print("Invalid choice. Please select 1, 2, or 3.")
-            
-            self.set('browser', browser)
-            
-            # Save to prefBrowser.txt for compatibility
-            with open('prefBrowser.txt', 'w') as f:
-                f.write(browser)
+            # Check if running in CI environment
+            is_ci = os.getenv('CI') or os.getenv('GITHUB_ACTIONS')
+            if is_ci:
+                # Default to chrome_undetected in CI mode
+                browser = 'chrome_undetected'
+                self.set('browser', browser)
+                print(f"Using default browser for CI: {browser}")
+            else:
+                # Interactive mode - ask user
+                print("\nAvailable browsers:")
+                print("1. chrome - Regular Chrome")
+                print("2. firefox - Firefox")
+                print("3. chrome_undetected - Undetected Chrome (Recommended)")
+                
+                while True:
+                    choice = input("Select browser (1-3): ").strip()
+                    if choice == '1':
+                        browser = 'chrome'
+                        break
+                    elif choice == '2':
+                        browser = 'firefox'
+                        break
+                    elif choice == '3':
+                        browser = 'chrome_undetected'
+                        break
+                    else:
+                        print("Invalid choice. Please select 1, 2, or 3.")
+                
+                self.set('browser', browser)
+                
+                # Save to prefBrowser.txt for compatibility
+                with open('prefBrowser.txt', 'w') as f:
+                    f.write(browser)
         
         return browser
