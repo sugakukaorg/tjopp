@@ -34,17 +34,6 @@ cp .env.example .env
 # Run the generator
 python edu_mail_generator.py
 ```
-
-### Method 2: Original Setup
-
-```bash
-# Install dependencies
-python setup.py
-
-# Run original bot
-python bot.py
-```
-
 ## 📋 Requirements
 
 - **Python 3.8+** (3.11+ recommended)
@@ -84,8 +73,6 @@ Add these secrets to your GitHub repository:
 # Interactive mode
 python edu_mail_generator.py
 
-# Or use the original
-python bot.py
 ```
 
 ### GitHub Actions
@@ -139,23 +126,6 @@ Generated accounts are saved to:
    # Use forward slashes in paths
    # Run as administrator if needed
    ```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is for educational purposes only. Use at your own risk.
-
-## 🙏 Acknowledgments
-
-- Original project by [AmmeySaini](https://github.com/AmmeySaini)
-- Modernized and enhanced for better compatibility
-- Community contributions and feedback
 # tjopp
 # tjopp
+
