@@ -1,0 +1,81 @@
+name: Edu Mail Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      college_id:
+        description: 'College ID (1-5)'
+        required: true
+        default: '1'
+        type: choice
+        options:
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+
+jobs:
+  generate-edu-mail:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg unzip curl xvfb
+    
+    - name: Install Google Chrome
+      run: |
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create configuration
+      run: |
+        echo "chrome_undetected" > prefBrowser.txt
+        cat > config.json << EOF
+        {
+          "browser": "chrome_undetected",
+          "headless": true,
+          "timeout": 60,
+          "retry_attempts": 3,
+          "delay_between_actions": 0.7,
+          "captcha_timeout": 300,
+          "output_file": "generated_accounts.txt",
+          "log_level": "INFO"
+        }
+        EOF
+    
+    - name: Run Edu Mail Generator
+      env:
+        EDU_EMAIL: ${{ secrets.EDU_EMAIL }}
+        DISPLAY: :99
+      run: |
+        Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 3
+        python edu_mail_generator.py
+    
+    - name: Upload generated accounts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: generated-accounts
+        path: |
+          generated_accounts.txt
+          edu_generator.log
+        retention-days: 30
