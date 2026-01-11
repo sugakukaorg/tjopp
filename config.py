@@ -55,6 +55,10 @@ class Config:
         self.config[key] = value
         self.save_config()
     
+    def _is_ci_environment(self) -> bool:
+        """Check if running in CI/non-interactive environment"""
+        return bool(os.getenv('CI') or os.getenv('GITHUB_ACTIONS'))
+    
     def get_email_from_env(self) -> str:
         """Get email from environment variable or GitHub secrets"""
         email = os.getenv('EDU_EMAIL')
@@ -63,9 +67,12 @@ class Config:
             email = os.getenv('GITHUB_EMAIL')
         if not email:
             # Check if running in CI environment
-            is_ci = os.getenv('CI') or os.getenv('GITHUB_ACTIONS')
-            if is_ci:
-                raise ValueError("EDU_EMAIL environment variable is required in CI/non-interactive mode")
+            if self._is_ci_environment():
+                raise ValueError(
+                    "EDU_EMAIL environment variable is required in CI/non-interactive mode. "
+                    "Please set the EDU_EMAIL secret in your GitHub repository settings: "
+                    "Settings -> Secrets and variables -> Actions -> New repository secret"
+                )
             # Fallback to asking user (only in interactive mode)
             email = input("Enter your email address: ")
         return email
@@ -75,8 +82,7 @@ class Config:
         browser = self.get('browser')
         if not browser or browser == '':
             # Check if running in CI environment
-            is_ci = os.getenv('CI') or os.getenv('GITHUB_ACTIONS')
-            if is_ci:
+            if self._is_ci_environment():
                 # Default to chrome_undetected in CI mode
                 browser = 'chrome_undetected'
                 self.set('browser', browser)
